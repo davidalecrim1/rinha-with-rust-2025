@@ -1,0 +1,26 @@
+[package]
+name = "rinha_with_rust_2025"
+version = "0.1.0"
+edition = "2021"
+
+[[bin]]
+name = "api"
+path = "src/api/main.rs"
+
+[[bin]]
+name = "worker"
+path = "src/worker/main.rs"
+
+[dependencies]
+chrono = { version = "0.4", features = ["serde"] }
+hyper = "1.6.0"
+tokio = { version = "1.47.1", features = ["rt-multi-thread", "full"] }
+axum = "0.7"
+hyperlocal = "0.9.1"
+bytes = "1.0"
+http-body-util = "0.1"
+log = "0.4"
+env_logger = "0.11"
+reqwest = { version = "0.12.23", features = ["json"] }
+serde = { version = "1.0.219", features = ["derive"] }
+redis = { version = "0.32.5", features = ["tokio-comp", "r2d2"] }

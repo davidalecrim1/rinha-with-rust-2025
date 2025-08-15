@@ -1,0 +1,15 @@
+FROM rust:1.86-alpine3.20 AS builder
+RUN apk add --no-cache musl-dev
+
+WORKDIR /app
+COPY Cargo.toml Cargo.lock ./
+RUN mkdir src && echo "fn main() {}" > src/main.rs
+RUN cargo build --release
+
+COPY src ./src
+RUN cargo build --release --bin rinha_with_rust_2025
+
+FROM debian:bullseye-slim AS final
+COPY --from=builder /app/target/release/rinha_with_rust_2025 /app/main
+WORKDIR /app
+CMD ["./main"]

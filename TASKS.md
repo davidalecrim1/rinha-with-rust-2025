@@ -1,0 +1,7 @@
+- [x] Understand rust basics
+- [x] Create a listener for the socket
+- [x] create the api paths
+- [ ] create a redis repo
+- [ ] create the worker pool
+- [ ] connect everything
+- [ ] test and fine tune it

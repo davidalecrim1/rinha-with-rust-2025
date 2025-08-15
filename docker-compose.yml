@@ -21,6 +21,7 @@ services:
       - REDIS_ADDR=unix:///var/run/redis.sock
       - UNIX_SOCKET=/var/run/api_1.sock
       - RUST_LOG=info
+      - RUST_BACKTRACE=0
     networks:
       - app
       - payment-processor
@@ -40,6 +41,7 @@ services:
       - REDIS_ADDR=unix:///var/run/redis.sock
       - UNIX_SOCKET=/var/run/api_2.sock
       - RUST_LOG=info
+      - RUST_BACKTRACE=0
     networks:
       - app
       - payment-processor
@@ -49,31 +51,33 @@ services:
           cpus: "0.3"
           memory: "50MB"
 
-  # rust-worker-1:
-  #   build:
-  #     context: .
-  #     dockerfile: Dockerfile.worker
-  #   container_name: rust-worker-1
-  #   networks:
-  #     - payment-processor
-  #   depends_on:
-  #     - redis
-  #     - rust-backend-1
-  #     - rust-backend-2
-  #   volumes:
-  #     - api-sockets:/var/run:rw
-  #   environment:
-  #     - PAYMENT_PROCESSOR_URL_DEFAULT=http://payment-processor-default:8080
-  #     - PAYMENT_PROCESSOR_URL_FALLBACK=http://payment-processor-fallback:8080
-  #     - MONITOR_HEALTH=true
-  #     - ENABLE_PROFILING=false
-  #     - REDIS_ADDR=/var/run/redis.sock
-  #     - WORKERS=200
-  #   deploy:
-  #     resources:
-  #       limits:
-  #         cpus: "0.5"
-  #         memory: "100MB"
+  rust-worker-1:
+    build:
+      context: .
+      dockerfile: Dockerfile.worker
+    container_name: rust-worker-1
+    volumes:
+      - api-sockets:/var/run:rw
+    networks:
+      - payment-processor
+    depends_on:
+      - redis
+      - rust-backend-1
+      - rust-backend-2
+    environment:
+      - PAYMENT_PROCESSOR_URL_DEFAULT=http://payment-processor-default:8080
+      - PAYMENT_PROCESSOR_URL_FALLBACK=http://payment-processor-fallback:8080
+      - MONITOR_HEALTH=true
+      - ENABLE_PROFILING=false
+      - REDIS_ADDR=unix:///var/run/redis.sock
+      - WORKERS=2
+      - RUST_LOG=info
+      - RUST_BACKTRACE=0
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: "100MB"
 
   redis:
     image: redis:8.0

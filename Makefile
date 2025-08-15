@@ -1,8 +1,12 @@
 TS := $(shell date '+%Y%m%d_%H%M%S')
 EXPORT_FILE := reports/report_$(TS).html
 
+build:
+	cargo build --bin api
+	cargo build --bin worker
+
 run:
-	SOCKET_PATH=/tmp/hyperlocal.sock cargo run
+	RUST_LOG=debug cargo run --bin api
 
 simple-test-1:
 	curl --unix-socket /tmp/hyperlocal.sock http://localhost/payments

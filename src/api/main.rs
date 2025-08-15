@@ -13,10 +13,10 @@ use rinha_with_rust_2025::config::Config;
 
 
 #[tokio::main]
-async fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
+async fn main() -> Result<(), Box<dyn Error>> {
     env_logger::init();
 
-    let config = Arc::new(Config::load()?);
+    let config = Arc::new(Config::load().unwrap());
     let _ = fs::remove_file(&config.socket_path);
 
     let listener = UnixListener::bind(&config.socket_path)?;
@@ -31,9 +31,12 @@ async fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
     let payment_repo = Arc::new(
         repository::PaymentRepository::new(redis_client.clone()),
     );
+    
     let payment_handler = handler::PaymentHandler::new(
         payment_repo.clone(),
     );
+
+    info!("Starting API");
 
     listener
         .serve(|| {
@@ -41,7 +44,9 @@ async fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
                 payment_handler.handle(request).await
             }
         })
-        .await?;
+        .await.unwrap();
+
+    info!("API stopped");
 
     Ok(())
 

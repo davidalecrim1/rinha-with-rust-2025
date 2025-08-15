@@ -1,1 +1,14 @@
-## TODO
+FROM rust:1.86-alpine3.20 AS builder
+RUN apk add --no-cache musl-dev openssl-dev pkgconfig build-base perl perl-dev
+
+WORKDIR /app
+COPY Cargo.toml Cargo.lock ./
+COPY src ./src
+
+# Build the API binary
+RUN cargo build --bin worker
+
+FROM debian:bullseye-slim AS final
+COPY --from=builder /app/target/debug/worker /app/main
+WORKDIR /app
+CMD ["./main"]

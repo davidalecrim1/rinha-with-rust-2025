@@ -3,6 +3,7 @@ use hyper::{Request, Response};
 use hyper::body::{Incoming, Body};
 use http_body_util::BodyExt;
 use crate::repository::PaymentRepository;
+use log::{error, debug};
 
 pub struct PaymentHandler {
     repo: Arc<PaymentRepository>,
@@ -62,9 +63,38 @@ impl PaymentHandler {
     }
     
     pub async fn handle_summary(&self, _request: Request<Incoming>)-> Result<Response<String>, hyper::Error>{
+        let query_params = _request.uri().query().unwrap_or("");
+        
+        let mut from = "";
+        let mut to = "";
+        
+        for param in query_params.split("&") {
+            if let Some((key, value)) = param.split_once("=") {
+                match key {
+                    "from" => from = value,
+                    "to" => to = value,
+                    _ => {}
+                }
+            }
+        }
+
+        debug!("From: {}, To: {}", from, to);
+
+        let summary = match self.repo.get_summary(from, to).await {
+            Ok(summary) => summary,
+            Err(e) => {
+                error!("Failed to get summary: {}", e);
+
+                return Ok(Response::builder()
+                    .status(500)
+                    .body(format!("Failed to get summary: {}", e))
+                    .unwrap());
+            }
+        };
+
         Ok(Response::builder()
-            .status(501)
-            .body("Not implemented".to_string())
+            .status(200)
+            .body(serde_json::to_string(&summary).unwrap())
             .unwrap())
     }
     

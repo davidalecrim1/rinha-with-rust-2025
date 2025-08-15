@@ -1,15 +1,14 @@
 FROM rust:1.86-alpine3.20 AS builder
-RUN apk add --no-cache musl-dev
+RUN apk add --no-cache musl-dev openssl-dev pkgconfig build-base perl perl-dev
 
 WORKDIR /app
 COPY Cargo.toml Cargo.lock ./
-RUN mkdir src && echo "fn main() {}" > src/main.rs
-RUN cargo build --release
-
 COPY src ./src
-RUN cargo build --release --bin rinha_with_rust_2025
+
+# Build the API binary
+RUN cargo build --bin api
 
 FROM debian:bullseye-slim AS final
-COPY --from=builder /app/target/release/rinha_with_rust_2025 /app/main
+COPY --from=builder /app/target/debug/api /app/main
 WORKDIR /app
 CMD ["./main"]
